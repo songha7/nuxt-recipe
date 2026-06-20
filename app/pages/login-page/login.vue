@@ -28,7 +28,18 @@
               autocomplete="email"
               required
               placeholder="m@example.com"
-              class="block w-full rounded-lg border border-gray-200 px-5 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm outline-none transition focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 sm:text-sm"
+              class="block w-full rounded-lg border
+              border-gray-200
+              px-5 py-2.5
+              text-gray-900
+              placeholder-gray-400
+              shadow-sm
+              outline-none
+              transition
+              focus:border-emerald-600
+              focus:ring-1
+              focus:ring-emerald-600
+              sm:text-sm"
             />
           </div>
         </div>
@@ -138,11 +149,11 @@ const form = reactive({
 
 const handleLogin = () => {
   console.log('Logging in with:', form.email, form.password)
-  // Your authentication logic here
+  //authentication
 }
 
 const handleGoogleLogin = () => {
   console.log('Initiating Google OAuth')
-  // Your Google OAuth logic here
+  //Google OAuth logic
 }
 </script>
