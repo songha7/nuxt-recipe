@@ -12,7 +12,10 @@
         </li>
             <NuxtLink to="/about">About</NuxtLink>
         <li>
-            <NuxtLink to="/login">Login</NuxtLink>
+            <NuxtLink to="/login-page/login">Login</NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/login-page/login-shadcn">Login by Shadcn</NuxtLink>
         </li>
       </ul>
     </nav>

@@ -1,14 +1,12 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
     <div>
-login page
+for signup 
     </div>
 </template>
 
+<script setup lang="ts">
 
+</script>
 
 <style scoped>
 
