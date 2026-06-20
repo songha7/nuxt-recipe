@@ -1,7 +1,4 @@
 <template>
-    <div class="flex min-h-hscreen item-center justify-center bg-green-500 text-blue-500">
-        <h2 class="bg-red-600">this is my login page as my preview</h2>
-    </div>
   <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
     <div class="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
       
@@ -130,7 +127,8 @@
       <p class="mt-6 text-center text-sm text-gray-500">
         Don't have an account?
         {{ ' ' }}
-        <NuxtLink to="/login-page/signup" class="text-gray-950 underline underline-offset-4 hover:text-gray-700">
+        <NuxtLink to="/login-page/signup"
+        class="text-gray-950 underline underline-offset-4 hover:text-gray-700">
           Sign up
         </NuxtLink>
       </p>

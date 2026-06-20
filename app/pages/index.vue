@@ -10,7 +10,7 @@ const { data, error } = await useFetch<RecipeResponse>(
 <template>
     <main>
         <section class="bg-[#f1f1f1]">
-            <div class="container flex flex-col lg:flex-row items-center py-20 gap-10">
+            <div class="container flex flex-col lg:flex-row justify-center items-center py-20 gap-10">
                 <div class="flex-1 order-2 lg:order-1 text-center lg:text-left">
                 <h1 class="text-4xl lg:text-6xl font-extrabold mb-6 text-balance">
                     Master the Kitchen with Ease: Unleash Your Inner Chef Today!
