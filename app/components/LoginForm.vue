@@ -16,10 +16,26 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { toTypedSchema } from "@vee-validate/zod"
+import { useForm } from "vee-validate"
+import z from "zod"
 
 const props = defineProps<{
   class?: HTMLAttributes["class"]
 }>()
+const formSchema = toTypedSchema(z.object({
+  username: z.string().min(2, {
+    message: 'Username must be at least 2 characters.',
+  }),
+}))
+
+const form = useForm({
+  validationSchema: formSchema,
+})
+
+const onSubmit = form.handleSubmit((values) => {
+  console.log('Form submitted!', values)
+})
 </script>
 
 <template>
@@ -32,7 +48,7 @@ const props = defineProps<{
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        <form @submit="onSubmit">
           <FieldGroup>
             <Field>
               <FieldLabel for="email">
@@ -59,7 +75,7 @@ const props = defineProps<{
               <Input id="password" type="password" required />
             </Field>
             <Field>
-              <Button type="submit">
+              <Button type="submit" form="qwe" for="qwe">
                 Login
               </Button>
               <Button variant="outline" type="button">

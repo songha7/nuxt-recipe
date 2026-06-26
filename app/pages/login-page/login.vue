@@ -93,7 +93,6 @@
             text-white
             shadow-sm
             hover:bg-[#007d52]
-            focus-visible:outline
             focus-visible:outline-2
             focus-visible:outline-offset-2
             focus-visible:outline-emerald-600
