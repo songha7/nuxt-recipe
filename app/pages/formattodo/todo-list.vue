@@ -4,7 +4,7 @@ import TodoList from "@/components/todo-listform.vue"
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen">
+  <div class="flex justify-center min-h-screen">
     <div class="">
       <TodoList />
     </div>

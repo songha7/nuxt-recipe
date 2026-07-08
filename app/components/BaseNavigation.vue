@@ -25,6 +25,9 @@ const a = {
         <li>
           <NuxtLink to="/formattodo/todo-list">to do lists</NuxtLink>
         </li>
+        <li>
+          <NuxtLink to="/counter">Counter State</NuxtLink>
+        </li>
       </ul>
     </nav>
   </header>

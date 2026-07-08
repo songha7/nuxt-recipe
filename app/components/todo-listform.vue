@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { parseStringToDateValue } from 'reka-ui/date'
-
+import { toast } from 'vue-sonner'
 
 import {
   Card,
@@ -48,23 +48,40 @@ import {
 import { id } from 'zod/v4/locales'
 import type Id from '~/pages/recipes/[id].vue'
 
+// import { watch } from 'vue'
+// const saved = localStorage.getItem('todoTasks')
+// const tasks = ref<TodoItem[]>(saved ? JSON.parse(saved) : [])
+// watch(tasks, (newTasks) => {
+//   localStorage.setItem('todoTasks', JSON.stringify(newTasks))
+// }, { deep: true })
 
-// ---- form fields ----
+
+import { computed } from 'vue'
+
+const todoTasks = computed(() => tasks.value.filter(t => !t.done))
+const doneTasks = computed(() => tasks.value.filter(t => t.done))
+
+// * todoTasks = "give me every task where done is false"
+//  ? doneTasks = "give me every task where done is true". 
+
+// ~ ---- form fields ----
 const date = ref<DateValue>()
 const defaultPlaceholder = today(getLocalTimeZone())
-const taskName = ref('') // what the user types in the "Task" input
+const taskName = ref('') // * what the user types in the "Task" input
 const editingId = ref<number | null>(null)
+const tasks = ref<TodoItem[]>([])
 
 
-// ---- the list of tasks that will show in the table ----
+// ~ ---- the list of tasks that will show in the table ----
 interface TodoItem {
   id: number
   task: string
   deadline: string
+  done: boolean
 }
-const tasks = ref<TodoItem[]>([])
 
-// runs when the button is clicked / form is submitted
+
+// & runs when the button is clicked / form is submitted
 // function addTask() {
 //   // don't add empty tasks
 //   if (!taskName.value.trim()) return
@@ -80,31 +97,36 @@ const tasks = ref<TodoItem[]>([])
 //   date.value = undefined
 // }
 
+
+// & function addTask on the submit form 🐛 
+
 function addTask() {
   if (!taskName.value.trim()) return
 
   if (editingId.value !== null) {
-    // we are editing -> find that task and update it
+    // ^ we are editing -> find that task and update it
     const target = tasks.value.find(t => t.id === editingId.value)
     if (target) {
       target.task = taskName.value
       target.deadline = date.value ? date.value.toString() : 'No deadline'
     }
-    editingId.value = null // done editing
+    editingId.value = null // ~ done editing
   }
   else {
-    // normal add
+    // ^ normal add
     tasks.value.push({
       id: tasks.value.length + 1,
       task: taskName.value,
       deadline: date.value ? date.value.toString() : 'No deadline',
+      done: false,
     })
   }
-
-  // reset the form either way
+  // ^ reset the form either way
   taskName.value = ''
   date.value = undefined
 }
+
+// & function for editing the form
 
 function editTask(item: TodoItem) {
   taskName.value = item.task
@@ -116,19 +138,52 @@ function editTask(item: TodoItem) {
   else {
     date.value = undefined
   }
-  // note: date doesn't auto-fill here because your deadline is stored as text
-  // that's okay for now — user can just re-pick the date if they want to change it
+  // ^ note: date doesn't auto-fill here because your deadline is stored as text
+  // ^ that's okay for now — user can just re-pick the date if they want to change it
 }
+
+// & function cancel the editing that swap the button
+
+function cancelEdit() {
+  editingId.value = (null)
+  taskName.value = ''
+  date.value = undefined
+}
+
+// & function deleteTask on Table-todo
 
 function deleteTask(id: number) {
   tasks.value = tasks.value.filter(t => t.id !== id)
 }
 
 
+// ! this script where i can save data in nuxt server and browser sevrer
+
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const saved = localStorage.getItem('todoTasks')
+  if (saved) {
+    tasks.value = JSON.parse(saved)
+  }
+})
+
+watch(tasks, (newTasks) => {
+  if (import.meta.client) {
+    localStorage.setItem('todoTasks', JSON.stringify(newTasks))
+  }
+}, { deep: true })
+
 </script>
 
 <template>
   <div class="m-10">
+    <!-- <Button @click="() => toast('My first toast', {
+      position: 'top-center'
+    })">
+    Give me a toast
+  </Button> -->
+
     <Card class="shadow-md">
       <CardHeader>
         <CardTitle>TO DO LIST</CardTitle>
@@ -168,7 +223,9 @@ function deleteTask(id: number) {
           </div>
 
           <CardFooter class="flex flex-col gap-2 px-0 mt-5">
-            <Button type="submit" class="w-full">
+            <Button type="submit" class="w-full"     @click="() => toast(editingId !== null ? 'The task is Updated. ✏️' : 'The task is created.', {
+              position: 'top-center'
+            })"> 
               {{ editingId !== null ? 'Update the task ✏️' : 'Submit the task 👾' }}
             </Button>
           </CardFooter>
@@ -176,34 +233,66 @@ function deleteTask(id: number) {
       </CardContent>
     </Card>
 
-    <div class="mt-20">
-      <Table>
-        <TableCaption>A list of your recent to-do-task</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead class="w-25">
-              Task Num
-            </TableHead>
-            <TableHead>Task</TableHead>
-            <TableHead>DeadLine</TableHead>
-            <TableHead class="text-center">Edit</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="item in tasks" :key="item.id">
-            <TableCell class="font-medium">
-              TASK{{ item.id }}
-            </TableCell>
-            <TableCell>{{ item.task }}</TableCell>
-            <TableCell>{{ item.deadline }}</TableCell>
-            <TableCell class="flex gap-2">
-              <Button class="bg-white border" variant="outline" @click="editTask(item)">✏️</Button>
-              <Button class="bg-white border" variant="outline" @click="deleteTask(item.id)">🗑️</Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+    <div class="mt-20 flex gap-10 flex-row">
+      <div class=" border rounded-md">
+        <div class="text-center font-semibold py-2 border-b bg-muted">to-do Table</div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead class="w-fit">No.</TableHead>
+              <TableHead>Task</TableHead>
+              <TableHead>DeadLine</TableHead>
+              <TableHead class="text-center">Edit</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="item in todoTasks" :key="item.id">
+              <TableCell class="font-medium">
+                TASK{{ item.id }}
+              </TableCell>
+              <TableCell>{{ item.task }}</TableCell>
+              <TableCell>{{ item.deadline }}</TableCell>
+              <TableCell>
+                <div class="flex gap-2 p-2">
+                  <Button v-if="editingId !== item.id"  class="bg-white border" variant="outline" @click="editTask(item)">✏️</Button>
+                  <Button v-else class="bg-white border" variant="outline" @click="cancelEdit">✖️</Button>
+                  <Button class="bg-white border" variant="outline" @click="deleteTask(item.id)">🗑️</Button>
+                  <Checkbox v-model="item.done" id="terms" class="p-4 h-4"/>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+      <div class=" border rounded-md">
+        <div class="text-center font-semibold py-2 border-b bg-muted">DONE to-do Table</div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead class="w-fit">No.</TableHead>
+              <TableHead>Task</TableHead>
+              <TableHead>DeadLine</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="item in doneTasks" :key="item.id">
+              <TableCell class="font-medium">
+                TASK{{ item.id }}
+              </TableCell>
+              <TableCell>{{ item.task }}</TableCell>
+              <TableCell>{{ item.deadline }}</TableCell>
+              <TableCell>
+                <div class="flex p-2">
+                  <Checkbox v-model="item.done" id="terms" class="p-4 h-4"/>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
     </div>
   </div>
+  
+
 </template>
 
