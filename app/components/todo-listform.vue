@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { DateFormatter, getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date'
 import { CalendarIcon } from '@lucide/vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import { parseStringToDateValue } from 'reka-ui/date'
 import { toast } from 'vue-sonner'
+import { Checkbox } from '@/components/ui/checkbox'
 
 import {
   Card,
@@ -47,7 +48,7 @@ import {
 } from '@/components/ui/table'
 import { id } from 'zod/v4/locales'
 import type Id from '~/pages/recipes/[id].vue'
-
+/*
 // import { watch } from 'vue'
 // const saved = localStorage.getItem('todoTasks')
 // const tasks = ref<TodoItem[]>(saved ? JSON.parse(saved) : [])
@@ -55,6 +56,7 @@ import type Id from '~/pages/recipes/[id].vue'
 //   localStorage.setItem('todoTasks', JSON.stringify(newTasks))
 // }, { deep: true })
 
+// ! this making change between two table of (todoTasks and doneTasks)
 
 import { computed } from 'vue'
 
@@ -131,6 +133,9 @@ function addTask() {
 function editTask(item: TodoItem) {
   taskName.value = item.task
   editingId.value = item.id
+  toast('editing task', {
+    position: 'top-center'
+  })
 
   if (item.deadline !== 'No deadline') {
     date.value = parseDate(item.deadline)
@@ -154,12 +159,17 @@ function cancelEdit() {
 
 function deleteTask(id: number) {
   tasks.value = tasks.value.filter(t => t.id !== id)
+  toast('The tasks is eliminated from the world', {
+    position: 'top-center',
+    // class: 'text-center bg-gray-200 text-lg text-blue-500 p-4 rounded-md' //  * it not working i'm waiting for my senoir
+  })
 }
 
 
 // ! this script where i can save data in nuxt server and browser sevrer
 
 import { onMounted } from 'vue'
+import { AlignCenter } from 'lucide-vue-next'
 
 onMounted(() => {
   const saved = localStorage.getItem('todoTasks')
@@ -173,6 +183,94 @@ watch(tasks, (newTasks) => {
     localStorage.setItem('todoTasks', JSON.stringify(newTasks))
   }
 }, { deep: true })
+*/
+
+
+
+
+
+
+
+// ~ ---- types ----
+interface TodoItem {
+  id: number
+  task: string
+  deadline: string
+  done: boolean
+}
+
+// ~ ---- fetch tasks from the server (source of truth is now the DB, not localStorage) ----
+const { data: rawTasks, refresh } = await useFetch<TodoItem[]>('/api/todos')
+
+const tasks = computed(() =>
+  (rawTasks.value ?? []).map(t => ({ ...t, done: !!t.done }))
+)
+// ~ ---- split into two views ----
+const todoTasks = computed(() => (tasks.value ?? []).filter(t => !t.done))
+const doneTasks = computed(() => (tasks.value ?? []).filter(t => t.done))
+
+// ~ ---- form fields ----
+const date = ref<DateValue>()
+const defaultPlaceholder = today(getLocalTimeZone())
+const taskName = ref('')
+const editingId = ref<number | null>(null)
+
+// & add a new task OR update the one being edited
+async function addTask() {
+  if (!taskName.value.trim()) return
+
+  const payload = {
+    task: taskName.value,
+    deadline: date.value ? date.value.toString() : 'No deadline',
+    done: false,
+  }
+
+  if (editingId.value !== null) {
+    await $fetch(`/api/todos/${editingId.value}`, { method: 'PATCH', body: payload })
+    toast('The task is Updated. ✏️', { position: 'top-center' })
+    editingId.value = null
+  }
+  else {
+    await $fetch('/api/todos', { method: 'POST', body: payload })
+    toast('The task is created.', { position: 'top-center' })
+  }
+
+  await refresh()
+  taskName.value = ''
+  date.value = undefined
+}
+
+// & fill the form with an existing task so the user can edit it
+function editTask(item: TodoItem) {
+  taskName.value = item.task
+  editingId.value = item.id
+  toast('editing task', { position: 'top-center' })
+
+  date.value = item.deadline !== 'No deadline' ? parseDate(item.deadline) : undefined
+}
+
+// & cancel editing, reset the form
+function cancelEdit() {
+  editingId.value = null
+  taskName.value = ''
+  date.value = undefined
+}
+
+// & delete a task from the database
+async function deleteTask(id: number) {
+  await $fetch(`/api/todos/${id}`, { method: 'DELETE' })
+  await refresh()
+  toast('The tasks is eliminated from the world', { position: 'top-center' })
+}
+
+// & flip a task's done state and save it
+async function toggleDone(item: TodoItem) {
+  await $fetch(`/api/todos/${item.id}`, { method: 'PATCH', body: { done: !item.done } })
+  await refresh()
+  toast(item.done ? 'task unchecked!!' : 'The task is finished', { position: 'top-center' })
+}
+
+
 
 </script>
 
@@ -223,9 +321,7 @@ watch(tasks, (newTasks) => {
           </div>
 
           <CardFooter class="flex flex-col gap-2 px-0 mt-5">
-            <Button type="submit" class="w-full"     @click="() => toast(editingId !== null ? 'The task is Updated. ✏️' : 'The task is created.', {
-              position: 'top-center'
-            })"> 
+            <Button type="submit" class="w-full">
               {{ editingId !== null ? 'Update the task ✏️' : 'Submit the task 👾' }}
             </Button>
           </CardFooter>
@@ -257,7 +353,12 @@ watch(tasks, (newTasks) => {
                   <Button v-if="editingId !== item.id"  class="bg-white border" variant="outline" @click="editTask(item)">✏️</Button>
                   <Button v-else class="bg-white border" variant="outline" @click="cancelEdit">✖️</Button>
                   <Button class="bg-white border" variant="outline" @click="deleteTask(item.id)">🗑️</Button>
-                  <Checkbox v-model="item.done" id="terms" class="p-4 h-4"/>
+                  <Checkbox
+                    :model-value="item.done"
+                    @update:model-value="toggleDone(item)"
+                    :id="'done-' + item.id"
+                    class="p-4 h-4"
+                  />
                 </div>
               </TableCell>
             </TableRow>
@@ -272,6 +373,7 @@ watch(tasks, (newTasks) => {
               <TableHead class="w-fit">No.</TableHead>
               <TableHead>Task</TableHead>
               <TableHead>DeadLine</TableHead>
+              <TableHead>Done</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -283,7 +385,12 @@ watch(tasks, (newTasks) => {
               <TableCell>{{ item.deadline }}</TableCell>
               <TableCell>
                 <div class="flex p-2">
-                  <Checkbox v-model="item.done" id="terms" class="p-4 h-4"/>
+                  <Checkbox
+                    :model-value="item.done"
+                    @update:model-value="toggleDone(item)"
+                    :id="'done-' + item.id"
+                    class="p-4 h-4"
+                  />
                 </div>
               </TableCell>
             </TableRow>
