@@ -7,8 +7,14 @@ export default defineNuxtConfig({
     'nuxt-icon-tw',
     '@nuxt/image',
     '@nuxtjs/google-fonts',
-    'shadcn-nuxt'
+    'shadcn-nuxt',
   ],
+
+  css: ['vue-sonner/style.css'],
+
+  nitro: {
+    preset: 'cloudflare-pages'
+  },
   googleFonts: {
     families: {
       Montserrat: true,

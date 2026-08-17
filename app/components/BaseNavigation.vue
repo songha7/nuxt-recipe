@@ -6,7 +6,7 @@ const a = {
 </script>
 <template>
   <header class="py-4 border-b">
-    <nav class="flex container items-baseline">
+    <nav class="flex w-full px-6 lg:px-12 items-baseline">
       <NuxtLink to="/" class="flex gap-1 items-center">
         <NuxtImg width="56" src="/icon-green.png" alt="" />
         <span class="text-3xl font-bold">Nuxtcipes</span>
