@@ -27,7 +27,7 @@ const { data, error } = await useFetch<RecipeResponse>(
                 </div>
             </div>
     </section>
-    <section class="py-20 md:p-20">
+    <section class="py-8 md:p-20 px-4">
       <h2 class="text-3xl lg:text-5xl mb-2">Discover, Create, Share</h2>
       <p class="text-lg lg:text-xl mb-8">Check out our most popular recipes!</p>
       <div v-if="!error" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8">
