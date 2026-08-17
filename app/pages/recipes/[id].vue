@@ -5,13 +5,13 @@ import { type Recipe } from '~~/types/types';
 const {id} = params
 
 const { data, error } = await useFetch<Recipe>(`https://dummyjson.com/recipes/${id}`)
- if (error.value) {
+  if (error.value) {
     throw createError({
         statusCode: error.value?.statusCode,
     });
- }
+  }
 
- useSeoMeta({
+  useSeoMeta({
   title: data.value?.name,
   description: 'Recipe for you to COOK!',
   ogTitle: data.value?.name,
@@ -26,7 +26,7 @@ const { data, error } = await useFetch<Recipe>(`https://dummyjson.com/recipes/${
 </script>
 
 <template>
-  <div class="flex flex-col max-w-screen-lg container py-20">
+  <div class="flex flex-col max-w-screen px-4 md:px-16">
     <!-- Header -->
     <div class="flex flex-col mb-6">
       <h2 class="text-5xl mb-4 font-semibold">{{ data?.name }}</h2>
@@ -52,7 +52,7 @@ const { data, error } = await useFetch<Recipe>(`https://dummyjson.com/recipes/${
       :src="data?.image"
       densities="x1"
       sizes="xs:100vw sm:100vw md:100vw lg:100vw"
-      class="w-full max-h-[500px] object-cover rounded-md shadow-sm mb-12"
+      class="w-full max-h-125 object-cover rounded-md shadow-sm mb-12"
       alt=""
     />
 

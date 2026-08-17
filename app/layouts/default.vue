@@ -4,6 +4,8 @@ import BaseNavigation from '~/components/BaseNavigation.vue';
 <template>
     <div>
         <BaseNavigation />
-        <slot />
+        <div class="pt-24">
+            <slot />
+        </div>
     </div>
 </template>
